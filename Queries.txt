@@ -1,0 +1,82 @@
+1.What is the number of employees under the leadership of each manager?
+
+SELECT m.EmployeeId AS ManagerId,
+       m.FirstName ||" "|| m.LastName Manager,
+       COUNT (e.EmployeeId) AS number_of_employees,
+             m.Title
+FROM Employee e
+JOIN Employee m ON e.ReportsTo = m.EmployeeId
+GROUP BY m.EmployeeId,
+         m.FirstName,
+         m.LastName;
+
+************************************************************************************************************************
+
+2.what are the top 10 customers based on the total paid?
+
+SELECT i.CustomerId,
+       c.FirstName ||" "|| c.LastName Name,
+       sum(i.Total) TotalPaid
+FROM Invoice i
+JOIN Customer c ON i.CustomerId = c.CustomerId
+GROUP BY i.CustomerId,
+         Name
+ORDER BY TotalPaid DESC
+LIMIT 10
+
+************************************************************************************************************************
+
+3.Who are the top 10 bands writing rock music?
+
+SELECT a.ArtistId,
+       a.Name,
+       count(*) Songs,
+       g.Name Genre
+FROM Artist a
+JOIN Album al ON a.ArtistId = al.ArtistId
+JOIN Track t ON t.AlbumId = al.AlbumId
+JOIN Genre g ON g.GenreId = t.GenreId
+WHERE g.Name = "Rock"
+GROUP BY a.ArtistId,
+         a.Name
+ORDER BY 3 DESC
+LIMIT 10;
+
+************************************************************************************************************************
+
+4.How many songs for each band of the top 5 and its genres?
+
+SELECT a.ArtistId,
+       a.Name,
+       count(*) Songs,
+       g.Name Genre
+FROM Artist a
+JOIN Album al ON a.ArtistId = al.ArtistId
+JOIN Genre g ON g.GenreId = t.GenreId
+JOIN Track t ON t.AlbumId = al.AlbumId -- WHERE g.Name = "Rock"
+GROUP BY a.ArtistId,
+         a.Name,
+         g.Name
+ORDER BY 3 DESC,
+         g.Name
+LIMIT 10;
+
+************************************************************************************************************************
+
+5.The top artists according to invoice amounts.
+
+SELECT a.Name,
+       sum(t.UnitPrice*
+             (SELECT count(*)
+              FROM InvoiceLine
+              GROUP BY TrackId)) AmountSpent
+FROM Artist a
+JOIN Album al ON a.ArtistId = al.ArtistId
+JOIN Track t ON t.AlbumId = al.AlbumId
+JOIN Genre g ON g.GenreId = t.GenreId
+JOIN InvoiceLine l ON l.TrackId = t.TrackId
+JOIN Invoice i ON i.InvoiceId = l.InvoiceId
+JOIN Customer c ON c.CustomerId = i.CustomerId
+GROUP BY a.Name
+ORDER BY 2 DESC
+LIMIT 5;
